@@ -1,5 +1,5 @@
 package centroeducativo;
-//holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+//holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaweeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 import java.awt.BorderLayout;      
 import java.awt.Color;
 import java.awt.Component;
