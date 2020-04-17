@@ -22,10 +22,13 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.ListModel;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
@@ -74,13 +77,14 @@ public class PanelValoracion extends JPanel {
 	JList<Estudiante> jListSeleccionados = new JList<Estudiante>(lmSeleccionados);
 	JScrollPane jScrollSeleccionados = new JScrollPane(jListSeleccionados);
 	
+	List<Estudiante> listaEstudiantes = EstudianteControlador.getInstancia().findAllEstudiantes();
+	List<Estudiante> listaGuardarNota = new ArrayList<Estudiante>();
+
 	
 	public PanelValoracion () {
 		super();
 		this.setLayout(new BorderLayout());
 		this.add(getPanelGestion(),BorderLayout.CENTER);
-		
-	
 		
 	}
 	
@@ -167,6 +171,7 @@ public class PanelValoracion extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent event) {
+				lmDisponibles.removeAllElements();
 				List<Estudiante> todosEstudiantes = EstudianteControlador.getInstancia().findAllEstudiantes();
 				for (Estudiante e : todosEstudiantes) {
 					lmDisponibles.addElement(e);
@@ -184,15 +189,6 @@ public class PanelValoracion extends JPanel {
 		panelGestion.add(getPanelAlumnos(),c);
 		
 
-		c.gridx = 1;
-		c.gridy = 15;
-		c.weighty = 1;
-		c.anchor = GridBagConstraints.CENTER;
-		JButton jbtGuardar  = new JButton("Guardar");
-		panelGestion.add(jbtGuardar, c);
-		
-
-		
 		return panelGestion;
 		
 	}
@@ -208,7 +204,7 @@ public class PanelValoracion extends JPanel {
 		a.gridx = 0;
 		a.gridy = 0;
 		a.anchor = GridBagConstraints.CENTER;
-		panelAlumnos.add(new JLabel(" Lista alumnos "), a);
+		panelAlumnos.add(new JLabel(" Lista todos alumnos "), a);
 		
 		a.gridx = 2;
 		a.gridy = 0;
@@ -237,6 +233,73 @@ public class PanelValoracion extends JPanel {
 		jScrollSeleccionados.setPreferredSize(new Dimension(250,250));
 		panelAlumnos.add(jScrollSeleccionados,a);
 		
+		
+		a.gridy = 2;
+		a.gridx = 0;
+		a.anchor = GridBagConstraints.CENTER;
+		JButton jbtEliminar = new JButton("Eliminar");
+		panelAlumnos.add(jbtEliminar, a);
+		
+		jbtEliminar.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				lmDisponibles.removeAllElements();
+				lmSeleccionados.removeAllElements();			
+			}
+		});
+		
+		
+		a.gridx = 2;
+		a.gridy = 2;
+		a.weighty = 1;
+		a.anchor = GridBagConstraints.CENTER;
+		JButton jbtGuardar  = new JButton("Guardar");
+		panelAlumnos.add(jbtGuardar, a);
+		
+		jbtGuardar.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+					Profesor p = (Profesor) jcbProfesor.getSelectedItem();
+					Materia m = (Materia) jcbMateria.getSelectedItem();
+//					List<Estudiante> listaEstudiantes = EstudianteControlador.getInstancia().findAllEstudiantes();
+//					List<Estudiante> listaGuardarNota = new ArrayList<Estudiante>();
+					
+					for (int i = 0; i < listaEstudiantes.size(); i++) {
+						
+						if (lmSeleccionados.contains(listaEstudiantes.get(i))) {
+							listaGuardarNota.add(listaEstudiantes.get(i));
+						}
+					
+					for (Estudiante notas : listaGuardarNota ) {
+						Valoracionmateria valoracion = ValoracionMateriaControlador.getInstancia()
+								.findByEstudianteAndProfesorAndMateria(p, m, notas);
+						if (valoracion != null) {
+							valoracion.setValoracion(jsNota.getValue());
+							valoracion.setFecha((Date)getDatePersonalizado().getValue());
+							ValoracionMateriaControlador.getInstancia().merge(valoracion);
+						}
+						else {
+							Valoracionmateria v = new Valoracionmateria();
+							v.setEstudiante(notas);
+							v.setMateria(m);
+							v.setProfesor(p);
+							v.setFecha((Date)getDatePersonalizado().getValue());
+							ValoracionMateriaControlador.getInstancia().persist(v);
+						}
+					}
+				}
+			JOptionPane.showMessageDialog(null, "Alumno/os: " + listaGuardarNota + "\n"
+					+ "tiene/n la nota: " + jsNota.getValue() + "\n"
+					+ "con fecha" + getDatePersonalizado().getValue());
+			listaGuardarNota.removeAll(listaGuardarNota);
+			//lmSeleccionados.removeAllElements();
+
+			}
+		});
+		
+		
 		return panelAlumnos;
 		
 	}
@@ -252,6 +315,21 @@ public class PanelValoracion extends JPanel {
 		b.gridy = 0;
 		b.anchor = GridBagConstraints.CENTER;
 		panelBotones.add(jbtAniadirTodos, b);
+			
+		jbtAniadirTodos.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				lmSeleccionados.removeAllElements();
+				List<Estudiante> aniadirTodos = EstudianteControlador.getInstancia().findAllEstudiantes();
+				for(Estudiante est:aniadirTodos) {
+					lmSeleccionados.addElement(est);
+					lmDisponibles.removeElement(est);
+				}
+	
+				
+			}
+		});	
 		
 		b.gridx = 0;
 		b.gridy = 1;
@@ -267,6 +345,7 @@ public class PanelValoracion extends JPanel {
 					Estudiante est = lmDisponibles.elementAt(indicesSeleccionados[i]);
 					lmSeleccionados.addElement(est);
 					lmDisponibles.removeElement(est);
+					
 				}
 			}
 		});
@@ -276,10 +355,42 @@ public class PanelValoracion extends JPanel {
 		b.anchor = GridBagConstraints.CENTER;
 		panelBotones.add(jbtQuitarUno, b);
 		
+		
+		jbtQuitarUno.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int indicesSeleccionados[] = jListSeleccionados.getSelectedIndices();
+				for (int i = indicesSeleccionados.length - 1; i > -1; i--) {
+					Estudiante est = lmSeleccionados.elementAt(indicesSeleccionados[i]);
+					lmDisponibles.addElement(est);
+					lmSeleccionados.removeElement(est);
+				}
+			}
+		});
+		
+		
 		b.gridx = 0;
 		b.gridy = 3;
 		b.anchor = GridBagConstraints.CENTER;
 		panelBotones.add(jbtQuitarTodos, b);
+		
+		jbtQuitarTodos.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				lmDisponibles.removeAllElements();
+				List<Estudiante> quitartodos = EstudianteControlador.getInstancia().findAllEstudiantes();
+				for(Estudiante est:quitartodos) {
+					lmDisponibles.addElement(est);
+					lmSeleccionados.removeElement(est);
+				}
+	
+				
+			}
+		});	
+		
+		
 		
 		return panelBotones;
 	}
@@ -312,19 +423,22 @@ public class PanelValoracion extends JPanel {
 		return jftf;
 	}
 	
+//	public JPanel guardadoConExito () {
+//		
+//		JPanel popUpGuardado = new JPanel();
+//		popUpGuardado.add(new JLabel("La nota se ha guardado con éxito !!!! /br de: "));
+//		//for (int i = listaGuardarNota.size() -1; i > 0; i--) {
+//		popUpGuardado.add((Component) listaGuardarNota);	
+//		//}
+//		popUpGuardado.add(new JLabel());
+//		popUpGuardado.add(new JTextField());
+//		
+//		
+//		
+//		return popUpGuardado;
+//	}
 
-
-	private class EstudianteJSpinner extends JSpinner {
-		
-		Estudiante estudiante = null;
-		
-		public EstudianteJSpinner (Estudiante estudiante) {
-			super();
-			this.estudiante = estudiante;
-		}
-		
-		
-	}
+	
 	
 //	private JSlider jsNota (int vertical, int min, int max, int init ) {
 //		JSlider js = new JSlider(vertical, min, max, init);

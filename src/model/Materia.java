@@ -101,6 +101,5 @@ public class Materia extends Entidad implements Serializable {
 		return false;
 	}
 	
-	
 
 }

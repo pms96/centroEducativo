@@ -91,7 +91,6 @@ public class Tipologiasexo extends Entidad implements Serializable {
 		return profesor;
 	}
 
-	@Override
 	public int getId() {
 		// TODO Auto-generated method stub
 		return 0;
@@ -112,5 +111,4 @@ public class Tipologiasexo extends Entidad implements Serializable {
 	}
 	
 	
-
 }
